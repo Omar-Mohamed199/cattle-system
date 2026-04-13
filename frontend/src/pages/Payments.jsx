@@ -2,16 +2,22 @@ import React, { useState, useEffect } from 'react';
 import api from '../api';
 import { useSocket } from '../context/SocketContext';
 import { Plus, Trash2 } from 'lucide-react';
+import LoadingSpinner from '../components/LoadingSpinner';
+import ErrorMessage from '../components/ErrorMessage';
 
 const Payments = () => {
   const [payments, setPayments] = useState([]);
   const [customers, setCustomers] = useState([]);
   const [cows, setCows] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ amount: '', customerId: '', cowId: '', paymentMethod: 'cash', date: new Date().toISOString().split('T')[0] });
   const socket = useSocket();
 
-  const fetchData = async () => {
+  const fetchData = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
       const [payRes, custRes, cowsRes] = await Promise.all([
         api.get('/payments'),
@@ -21,38 +27,52 @@ const Payments = () => {
       setPayments(payRes.data);
       setCustomers(custRes.data);
       setCows(cowsRes.data);
+      setError('');
     } catch (err) {
-      console.error(err.response?.data || err.message);
+      console.error(err);
+      setError('حدث خطأ أثناء تحميل البيانات');
+    } finally {
+      if (showLoading) setLoading(false);
     }
   };
 
   useEffect(() => {
     fetchData();
     if (socket) {
-      socket.on('data_updated', fetchData);
-      return () => socket.off('data_updated', fetchData);
+      const handleUpdate = () => fetchData(false);
+      socket.on('data_updated', handleUpdate);
+      return () => socket.off('data_updated', handleUpdate);
     }
   }, [socket]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
       const dataToSubmit = { ...form };
-      if (!dataToSubmit.cowId) delete dataToSubmit.cowId; // Option to be null/undefined
+      if (!dataToSubmit.cowId) delete dataToSubmit.cowId;
 
       await api.post('/payments', dataToSubmit);
       setIsModalOpen(false);
       setForm({ amount: '', customerId: '', cowId: '', paymentMethod: 'cash', date: new Date().toISOString().split('T')[0] });
     } catch (err) {
       alert('خطأ في إضافة الدفعة: ' + (err.response?.data?.error || err.message));
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const deletePayment = async (id) => {
     if (window.confirm('هل أنت متأكد من حذف هذه الدفعة؟')) {
-      await api.delete(`/payments/${id}`);
+      try {
+        await api.delete(`/payments/${id}`);
+      } catch (err) {
+        alert('خطأ في حذف الدفعة');
+      }
     }
   };
+
+  if (loading) return <LoadingSpinner />;
 
   return (
     <div>
@@ -62,6 +82,8 @@ const Payments = () => {
           <Plus size={18} /> تسجيل دفعة
         </button>
       </div>
+
+      <ErrorMessage message={error} />
 
       {isModalOpen && (
         <div className="card" style={{marginBottom: '2rem'}}>
@@ -100,7 +122,7 @@ const Payments = () => {
             </div>
             
             <div style={{display: 'flex', gap: '0.5rem', marginTop: '1rem'}}>
-              <button type="submit" className="btn btn-primary">حفظ</button>
+              <button type="submit" className="btn btn-primary" disabled={submitting}>حفظ</button>
               <button type="button" className="btn btn-outline" onClick={() => setIsModalOpen(false)}>إلغاء</button>
             </div>
           </form>
@@ -120,11 +142,14 @@ const Payments = () => {
             </tr>
           </thead>
           <tbody>
+            {payments.length === 0 && (
+              <tr><td colSpan="6" style={{textAlign:'center', padding:'2rem', color:'var(--text-muted)'}}>لا توجد مدفوعات مسجلة</td></tr>
+            )}
             {payments.map(payment => (
               <tr key={payment._id}>
                 <td>{new Date(payment.date).toLocaleDateString('ar-EG')}</td>
                 <td>{payment.customerId ? payment.customerId.name : 'غير معروف'}</td>
-                <td style={{color: 'var(--success)', fontWeight: 'bold'}}>{payment.amount} ج.م</td>
+                <td style={{color: 'var(--success)', fontWeight: 'bold'}}>{payment.amount.toLocaleString('ar-EG')} ج.م</td>
                 <td>{payment.paymentMethod === 'transfer' ? 'تحويل بنكي' : 'كاش'}</td>
                 <td>{payment.cowId ? <span className="badge badge-warning">#{payment.cowId.numberId}</span> : '-'}</td>
                 <td>

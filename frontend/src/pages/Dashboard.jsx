@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import api from '../api';
 import { useSocket } from '../context/SocketContext';
 import { BookOpen, DollarSign, Receipt, CreditCard } from 'lucide-react';
+import LoadingSpinner from '../components/LoadingSpinner';
 
 const Dashboard = () => {
   const [metrics, setMetrics] = useState({
@@ -11,14 +12,18 @@ const Dashboard = () => {
     totalPaymentsReceived: 0,
     totalOutstanding: 0
   });
+  const [loading, setLoading] = useState(true);
   const socket = useSocket();
 
-  const fetchMetrics = async () => {
+  const fetchMetrics = async (showLoading = true) => {
+    if (showLoading) setLoading(true);
     try {
       const res = await api.get('/dashboard');
       setMetrics(res.data);
     } catch (err) {
       console.error('Error fetching dashboard metrics', err.response?.data || err.message);
+    } finally {
+      if (showLoading) setLoading(false);
     }
   };
 
@@ -26,12 +31,15 @@ const Dashboard = () => {
     fetchMetrics();
     
     if (socket) {
-      socket.on('data_updated', fetchMetrics);
+      const handleUpdate = () => fetchMetrics(false);
+      socket.on('data_updated', handleUpdate);
       return () => {
-        socket.off('data_updated', fetchMetrics);
+        socket.off('data_updated', handleUpdate);
       };
     }
   }, [socket]);
+
+  if (loading) return <LoadingSpinner />;
 
   return (
     <div>

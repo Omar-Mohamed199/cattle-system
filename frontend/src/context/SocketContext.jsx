@@ -9,8 +9,8 @@ export const SocketProvider = ({ children }) => {
   const [socket, setSocket] = useState(null);
 
   useEffect(() => {
-    // Assuming backend is running on port 5000 in dev
-    const newSocket = io('http://localhost:5000');
+    const socketUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace('/api', '') : 'http://localhost:5000';
+    const newSocket = io(socketUrl);
     setSocket(newSocket);
 
     return () => newSocket.disconnect();
