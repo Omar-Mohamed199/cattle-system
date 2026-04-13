@@ -3,6 +3,7 @@ import api from '../api';
 import { useSocket } from '../context/SocketContext';
 import { BookOpen, DollarSign, Receipt, CreditCard } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
+import ErrorMessage from '../components/ErrorMessage';
 
 const Dashboard = () => {
   const [metrics, setMetrics] = useState({
@@ -13,15 +14,24 @@ const Dashboard = () => {
     totalOutstanding: 0
   });
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const socket = useSocket();
 
   const fetchMetrics = async (showLoading = true) => {
     if (showLoading) setLoading(true);
     try {
       const res = await api.get('/dashboard');
-      setMetrics(res.data);
+      setMetrics(res.data || {
+        totalCows: 0,
+        totalExpectedRevenue: 0,
+        totalExpenses: 0,
+        totalPaymentsReceived: 0,
+        totalOutstanding: 0
+      });
+      setError('');
     } catch (err) {
-      console.error('Error fetching dashboard metrics', err.response?.data || err.message);
+      console.error('Error fetching dashboard metrics', err);
+      setError(err.friendlyMessage || 'حدث خطأ أثناء تحميل بيانات لوحة القيادة');
     } finally {
       if (showLoading) setLoading(false);
     }
@@ -47,6 +57,8 @@ const Dashboard = () => {
         <h2 className="page-title">لوحة القيادة</h2>
       </div>
 
+      <ErrorMessage message={error} />
+
       <div className="grid-cards">
         <div className="card stat-card border-r-4" style={{borderRight: '4px solid var(--primary-color)'}}>
           <div className="stat-icon">
@@ -54,7 +66,7 @@ const Dashboard = () => {
           </div>
           <div className="stat-details">
             <h3>إجمالي العجول</h3>
-            <p>{metrics.totalCows}</p>
+            <p>{(metrics.totalCows || 0)}</p>
           </div>
         </div>
 
@@ -64,7 +76,7 @@ const Dashboard = () => {
           </div>
           <div className="stat-details">
             <h3>الإيرادات المتوقعة</h3>
-            <p>{metrics.totalExpectedRevenue.toLocaleString('ar-EG')} ج.م</p>
+            <p>{(metrics.totalExpectedRevenue || 0).toLocaleString('ar-EG')} ج.م</p>
           </div>
         </div>
 
@@ -74,7 +86,7 @@ const Dashboard = () => {
           </div>
           <div className="stat-details">
             <h3>المدفوعات المستلمة</h3>
-            <p>{metrics.totalPaymentsReceived.toLocaleString('ar-EG')} ج.م</p>
+            <p>{(metrics.totalPaymentsReceived || 0).toLocaleString('ar-EG')} ج.م</p>
           </div>
         </div>
 
@@ -84,7 +96,7 @@ const Dashboard = () => {
           </div>
           <div className="stat-details">
             <h3>المبالغ المتبقية</h3>
-            <p>{metrics.totalOutstanding.toLocaleString('ar-EG')} ج.م</p>
+            <p>{(metrics.totalOutstanding || 0).toLocaleString('ar-EG')} ج.م</p>
           </div>
         </div>
 
@@ -94,7 +106,7 @@ const Dashboard = () => {
           </div>
           <div className="stat-details">
             <h3>إجمالي المصروفات</h3>
-            <p>{metrics.totalExpenses.toLocaleString('ar-EG')} ج.م</p>
+            <p>{(metrics.totalExpenses || 0).toLocaleString('ar-EG')} ج.م</p>
           </div>
         </div>
       </div>

@@ -54,14 +54,14 @@ const Cows = () => {
       setCustomers(custRes.data);
       setPayments(payRes.data);
       
-      const loadedCows = cowsRes.data.map(cow => ({
+      const loadedCows = (cowsRes.data || []).map(cow => ({
         id: Math.random().toString(36).substr(2, 9),
         dbId: cow._id,
-        numberId: cow.numberId.toString(),
+        numberId: (cow.numberId || '').toString(),
         weight: (cow.weight || 0).toString(),
-        partners: cow.partners.map(p => ({
+        partners: (cow.partners || []).map(p => ({
           id: Math.random().toString(36).substr(2, 9),
-          customerId: p.customerId ? p.customerId._id : '',
+          customerId: p.customerId ? (p.customerId._id || p.customerId) : '',
           share: (p.share || 0).toString(),
           price: (p.price || 0).toString(),
           slaughterCostShare: (p.slaughterCostShare || 0).toString(),
@@ -74,8 +74,8 @@ const Cows = () => {
       isDirty.current = false;
       setError('');
     } catch (err) {
-      console.error(err);
-      setError('حدث خطأ أثناء تحميل البيانات. يرجى المحاولة مرة أخرى.');
+      console.error('Fetch error:', err);
+      setError(err.friendlyMessage || 'حدث خطأ أثناء تحميل البيانات. يرجى المحاولة مرة أخرى.');
     } finally {
       if (showLoading) setLoading(false);
     }

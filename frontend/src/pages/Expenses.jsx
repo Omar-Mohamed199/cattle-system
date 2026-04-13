@@ -18,11 +18,11 @@ const Expenses = () => {
     if (showLoading) setLoading(true);
     try {
       const res = await api.get('/expenses');
-      setExpenses(res.data);
+      setExpenses(res.data || []);
       setError('');
     } catch (err) {
       console.error(err);
-      setError('حدث خطأ أثناء تحميل المصروفات');
+      setError(err.friendlyMessage || 'حدث خطأ أثناء تحميل المصروفات');
     } finally {
       if (showLoading) setLoading(false);
     }
@@ -45,7 +45,7 @@ const Expenses = () => {
       setIsModalOpen(false);
       setForm({ amount: '', description: '', date: new Date().toISOString().split('T')[0] });
     } catch (err) {
-      alert('خطأ في إضافة المصروف: ' + err.message);
+      alert('خطأ في إضافة المصروف: ' + (err.friendlyMessage || err.message));
     } finally {
       setSubmitting(false);
     }
@@ -112,10 +112,10 @@ const Expenses = () => {
             </tr>
           </thead>
           <tbody>
-            {expenses.length === 0 && (
+            {(expenses || []).length === 0 && (
               <tr><td colSpan="4" style={{textAlign:'center', padding:'2rem', color:'var(--text-muted)'}}>لا توجد مصروفات مسجلة</td></tr>
             )}
-            {expenses.map(expense => (
+            {(expenses || []).map(expense => (
               <tr key={expense._id}>
                 <td>{new Date(expense.date).toLocaleDateString('ar-EG')}</td>
                 <td>{expense.description}</td>

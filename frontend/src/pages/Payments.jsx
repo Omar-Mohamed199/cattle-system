@@ -24,13 +24,13 @@ const Payments = () => {
         api.get('/customers'),
         api.get('/cows')
       ]);
-      setPayments(payRes.data);
-      setCustomers(custRes.data);
-      setCows(cowsRes.data);
+      setPayments(payRes.data || []);
+      setCustomers(custRes.data || []);
+      setCows(cowsRes.data || []);
       setError('');
     } catch (err) {
       console.error(err);
-      setError('حدث خطأ أثناء تحميل البيانات');
+      setError(err.friendlyMessage || 'حدث خطأ أثناء تحميل البيانات');
     } finally {
       if (showLoading) setLoading(false);
     }
@@ -56,7 +56,7 @@ const Payments = () => {
       setIsModalOpen(false);
       setForm({ amount: '', customerId: '', cowId: '', paymentMethod: 'cash', date: new Date().toISOString().split('T')[0] });
     } catch (err) {
-      alert('خطأ في إضافة الدفعة: ' + (err.response?.data?.error || err.message));
+      alert('خطأ في إضافة الدفعة: ' + (err.friendlyMessage || err.message));
     } finally {
       setSubmitting(false);
     }
@@ -142,10 +142,10 @@ const Payments = () => {
             </tr>
           </thead>
           <tbody>
-            {payments.length === 0 && (
+            {(payments || []).length === 0 && (
               <tr><td colSpan="6" style={{textAlign:'center', padding:'2rem', color:'var(--text-muted)'}}>لا توجد مدفوعات مسجلة</td></tr>
             )}
-            {payments.map(payment => (
+            {(payments || []).map(payment => (
               <tr key={payment._id}>
                 <td>{new Date(payment.date).toLocaleDateString('ar-EG')}</td>
                 <td>{payment.customerId ? payment.customerId.name : 'غير معروف'}</td>

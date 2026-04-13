@@ -7,16 +7,23 @@ const Login = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    if (login(username, password)) {
+    setError('');
+    setSubmitting(true);
+    
+    const result = await login(username, password);
+    
+    if (result.success) {
       navigate('/');
     } else {
-      setError('اسم المستخدم أو كلمة المرور غير صحيحة');
+      setError(result.message);
     }
+    setSubmitting(false);
   };
 
   return (
@@ -56,7 +63,9 @@ const Login = () => {
             </div>
           </div>
           
-          <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>دخول</button>
+          <button type="submit" className="btn btn-primary" style={{ width: '100%' }} disabled={submitting}>
+            {submitting ? 'جاري الدخول...' : 'دخول'}
+          </button>
         </form>
       </div>
     </div>
