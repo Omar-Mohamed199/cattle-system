@@ -1,42 +1,54 @@
 import axios from "axios";
 
+// تأكد إن ال API URL موجود
+const BASE_URL = import.meta.env.VITE_API_URL;
+
+if (!BASE_URL) {
+  console.error("❌ VITE_API_URL is not defined!");
+}
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || "http://localhost:5000/api",
+  baseURL: BASE_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
 });
 
-// Request interceptor for API calls
+// 🔐 Request interceptor (إضافة التوكن)
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('cattle_token');
+    const token = localStorage.getItem("cattle_token");
+
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  }
+  (error) => Promise.reject(error)
 );
 
-// Response interceptor for API calls
+// ⚠️ Response interceptor (التعامل مع الأخطاء)
 api.interceptors.response.use(
-  (response) => {
-    // Return response normally
-    return response;
-  },
+  (response) => response,
   (error) => {
-    // Handle global errors e.g. unauthorized
+    // لو unauthorized
     if (error.response?.status === 401) {
-      // Potentially logout here or refresh token
-      // localStorage.removeItem('cattle_token');
-      // localStorage.removeItem('cattle_user');
-      // window.location.href = '/login';
+      localStorage.removeItem("cattle_token");
+      localStorage.removeItem("cattle_user");
+
+      // يرجعك login
+      window.location.href = "/login";
     }
-    
-    // Smooth out error message from backend
-    const message = error.response?.data?.message || error.message || "حدث خطأ غير متوقع";
+
+    // رسالة error مفهومة
+    const message =
+      error.response?.data?.message ||
+      error.message ||
+      "حدث خطأ غير متوقع";
+
     error.friendlyMessage = message;
-    
+
     return Promise.reject(error);
   }
 );
