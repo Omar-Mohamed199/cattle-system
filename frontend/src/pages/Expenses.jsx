@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
 import { useSocket } from '../context/SocketContext';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Download } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
+import { exportToExcel } from '../utils/exportToExcel';
 
 const Expenses = () => {
   const [expenses, setExpenses] = useState([]);
@@ -59,6 +60,13 @@ const Expenses = () => {
         alert('خطأ في حذف المصروف');
       }
     }
+  const handleExport = () => {
+    const data = expenses.map(e => ({
+      "التاريخ": new Date(e.date).toLocaleDateString('ar-EG'),
+      "البيان": e.description,
+      "المبلغ": e.amount
+    }));
+    exportToExcel(data, "المصروفات");
   };
 
   if (loading) return <LoadingSpinner />;
@@ -66,10 +74,15 @@ const Expenses = () => {
   return (
     <div>
       <div className="page-header">
-        <h2 className="page-title">المصروفات العامة</h2>
-        <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
-          <Plus size={18} /> تسجيل مصروف
-        </button>
+        <h2 className="page-title">إدارة المصروفات العامة</h2>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button className="btn btn-outline" style={{ color: 'var(--success)', borderColor: 'var(--success)' }} onClick={handleExport}>
+            <Download size={18} /> تحميل Excel
+          </button>
+          <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
+            <Plus size={18} /> تسجيل مصروف
+          </button>
+        </div>
       </div>
 
       <ErrorMessage message={error} />

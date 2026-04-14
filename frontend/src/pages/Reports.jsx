@@ -3,6 +3,8 @@ import api from '../api';
 import { useSocket } from '../context/SocketContext';
 import { calculateCustomerFinances } from '../utils/calculations';
 import LoadingSpinner from '../components/LoadingSpinner';
+import { Download } from 'lucide-react';
+import { exportToExcel } from '../utils/exportToExcel';
 
 const Reports = () => {
   const [activeTab, setActiveTab] = useState('cows'); // cows, expenses, slaughter
@@ -92,12 +94,46 @@ const Reports = () => {
     return expenses.reduce((sum, e) => sum + e.amount, 0);
   }, [expenses]);
 
+  const handleExportExcel = () => {
+    let data = [];
+    let fileName = "";
+
+    if (activeTab === 'cows') {
+      data = cowsReportData.map(row => ({
+        "العجل": row.numberId,
+        "المستحق": row.expected,
+        "المدفوع": row.paid,
+        "المتبقي": row.remaining
+      }));
+      fileName = "تقرير_المبيعات";
+    } else if (activeTab === 'slaughter') {
+      data = slaughterReportData.map(row => ({
+        "العجل": row.numberId,
+        "تكلفة الذبح": row.totalSlaughterCost,
+        "الموزع": row.distributed
+      }));
+      fileName = "تقرير_الذبح";
+    } else {
+      data = expenses.map(exp => ({
+        "التاريخ": new Date(exp.date).toLocaleDateString('ar-EG'),
+        "البيان": exp.description,
+        "المبلغ": exp.amount
+      }));
+      fileName = "تقرير_المصروفات";
+    }
+
+    exportToExcel(data, fileName);
+  };
+
   if (loading) return <LoadingSpinner />;
 
   return (
     <div>
       <div className="page-header">
         <h2 className="page-title">التقارير المالية</h2>
+        <button className="btn btn-outline" style={{ color: 'var(--success)', borderColor: 'var(--success)' }} onClick={handleExportExcel}>
+          <Download size={18} /> تحميل Excel
+        </button>
       </div>
 
       <div style={{display: 'flex', borderBottom: '1px solid var(--border-color)', marginBottom: '1rem', overflowX: 'auto', whiteSpace: 'nowrap'}}>

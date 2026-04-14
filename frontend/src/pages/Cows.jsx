@@ -2,10 +2,11 @@ import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import api from '../api';
 import { useSocket } from '../context/SocketContext';
 import { calculateCustomerFinances } from '../utils/calculations';
-import { Save, Plus, Trash2, Box, Search, CreditCard } from 'lucide-react';
+import { Save, Plus, Trash2, Box, Search, CreditCard, Download } from 'lucide-react';
 import debounce from 'lodash/debounce';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
+import { exportToExcel } from '../utils/exportToExcel';
 
 const Cows = () => {
   const [cows, setCows] = useState([]);
@@ -216,6 +217,27 @@ const Cows = () => {
     });
   }, [cows, debouncedSearch, customers]);
 
+  const handleExportExcel = () => {
+    const data = filteredCows.flatMap(cow => {
+      return cow.partners
+        .filter(p => p.customerId)
+        .map(p => {
+          const fin = calculateCustomerFinances(cow.weight, p, cow.dbId, payments);
+          const customer = customers.find(c => c._id === p.customerId);
+          return {
+            "رقم العجل": cow.numberId,
+            "اسم العميل": customer ? customer.name : "غير معروف",
+            "وزن العجل": cow.weight,
+            "سعر الكجم": p.price,
+            "إجمالي الحساب": fin.customerTotal,
+            "المدفوع": fin.paidAmount,
+            "المتبقي": fin.remaining
+          };
+        });
+    });
+    exportToExcel(data, "بيانات_العجول");
+  };
+
   if (loading) return <LoadingSpinner />;
 
   return (
@@ -240,6 +262,9 @@ const Cows = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
+          <button className="btn btn-outline" style={{ color: 'var(--success)', borderColor: 'var(--success)' }} onClick={handleExportExcel}>
+            <Download size={18} /> تحميل Excel
+          </button>
           <button className="btn btn-outline" onClick={() => performSave(false)} disabled={!isDirty.current || isSaving.current}>
             <Save size={18} /> حفظ يدوي
           </button>

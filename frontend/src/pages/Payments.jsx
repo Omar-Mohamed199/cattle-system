@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
 import { useSocket } from '../context/SocketContext';
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, Download } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
+import { exportToExcel } from '../utils/exportToExcel';
 
 const Payments = () => {
   const [payments, setPayments] = useState([]);
@@ -72,15 +73,31 @@ const Payments = () => {
     }
   };
 
+  const handleExport = () => {
+    const data = payments.map(p => ({
+      "التاريخ": new Date(p.date).toLocaleDateString('ar-EG'),
+      "العميل": p.customerId?.name || "غير معروف",
+      "المبلغ": p.amount,
+      "طريقة الدفع": p.paymentMethod === 'transfer' ? 'تحويل بنكي' : 'كاش',
+      "رقم العجل": p.cowId ? `#${p.cowId.numberId}` : '-'
+    }));
+    exportToExcel(data, "المدفوعات");
+  };
+
   if (loading) return <LoadingSpinner />;
 
   return (
     <div>
       <div className="page-header">
         <h2 className="page-title">إدارة المدفوعات (الأقساط)</h2>
-        <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
-          <Plus size={18} /> تسجيل دفعة
-        </button>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+          <button className="btn btn-outline" style={{ color: 'var(--success)', borderColor: 'var(--success)' }} onClick={handleExport}>
+            <Download size={18} /> تحميل Excel
+          </button>
+          <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>
+            <Plus size={18} /> تسجيل دفعة
+          </button>
+        </div>
       </div>
 
       <ErrorMessage message={error} />
