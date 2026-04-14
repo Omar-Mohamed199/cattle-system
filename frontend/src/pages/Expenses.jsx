@@ -60,6 +60,8 @@ const Expenses = () => {
         alert('خطأ في حذف المصروف');
       }
     }
+  };
+
   const handleExport = () => {
     const data = expenses.map(e => ({
       "التاريخ": new Date(e.date).toLocaleDateString('ar-EG'),
