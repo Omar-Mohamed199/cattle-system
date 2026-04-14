@@ -106,11 +106,11 @@ const Cows = () => {
       }))
   });
 
-  const performSave = async (isSync = false) => {
+  const performSave = async () => {
     if (!isDirty.current || isSaving.current) return;
     
     isSaving.current = true;
-    if (!isSync) setSaveStatus('جاري الحفظ...');
+    setSaveStatus('جاري الحفظ...');
 
     const currentCows = latestCows.current;
 
@@ -127,54 +127,30 @@ const Cows = () => {
       const promises = [];
 
       for (const cow of deletedCows) {
-        if (isSync) {
-            fetch(`${api.defaults.baseURL}/cows/${cow.dbId}`, { method: 'DELETE', keepalive: true });
-        } else {
-            promises.push(api.delete(`/cows/${cow.dbId}`));
-        }
+        promises.push(api.delete(`/cows/${cow.dbId}`));
       }
 
       for (const cow of newCows) {
-          const payload = formatPayload(cow);
-          if (isSync) {
-            fetch(`${api.defaults.baseURL}/cows`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-                keepalive: true
-            });
-          } else {
-            promises.push(api.post('/cows', payload).then(res => {
-              cow.dbId = res.data._id;
-            }));
-          }
+        const payload = formatPayload(cow);
+        promises.push(api.post('/cows', payload).then(res => {
+          cow.dbId = res.data._id;
+        }));
       }
 
       for (const cow of updatedCows) {
-          const payload = formatPayload(cow);
-          if (isSync) {
-            fetch(`${api.defaults.baseURL}/cows/${cow.dbId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload),
-                keepalive: true
-            });
-          } else {
-            promises.push(api.put(`/cows/${cow.dbId}`, payload));
-          }
+        const payload = formatPayload(cow);
+        promises.push(api.put(`/cows/${cow.dbId}`, payload));
       }
 
-      if (!isSync) await Promise.all(promises);
+      await Promise.all(promises);
 
       snapshot.current = JSON.parse(JSON.stringify(currentCows));
       isDirty.current = false;
       
-      if (!isSync) {
-        setSaveStatus('تم الحفظ بنجاح ✅');
-        setTimeout(() => { if (!isDirty.current) setSaveStatus(''); }, 3000);
-      }
+      setSaveStatus('تم الحفظ بنجاح ✅');
+      setTimeout(() => { if (!isDirty.current) setSaveStatus(''); }, 3000);
     } catch (err) {
-      if (!isSync) setSaveStatus('خطأ في الحفظ!');
+      setSaveStatus('خطأ في الحفظ!');
       console.error(err);
     } finally {
       isSaving.current = false;
@@ -192,7 +168,7 @@ const Cows = () => {
   useEffect(() => {
     const handleBeforeUnload = (e) => {
       if (isDirty.current) {
-        performSave(true);
+        performSave();
         e.preventDefault();
         e.returnValue = '';
       }
@@ -200,7 +176,7 @@ const Cows = () => {
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      if (isDirty.current) performSave(true);
+      if (isDirty.current) performSave();
     };
   }, []);
 
