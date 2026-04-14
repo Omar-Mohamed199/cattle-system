@@ -334,8 +334,8 @@ const CowCard = React.memo(({ cow, customers, payments, handleChangeCow, handleR
         </button>
       </div>
 
-      <div style={{ overflowX: 'auto' }}>
-        <table style={{ width: '100%', minWidth: '1080px', marginBottom: '1rem' }}>
+      <div style={{ overflowX: 'auto', marginBottom: '1rem' }}>
+        <table style={{ width: '100%', minWidth: '800px' }}>
           <thead>
             <tr>
               <th style={{ width: '180px' }}>العميل</th>
@@ -391,8 +391,8 @@ const CowCard = React.memo(({ cow, customers, payments, handleChangeCow, handleR
           <Plus size={16} /> إضافة عميل لهذا العجل
         </button>
 
-        <div style={{ display: 'flex', gap: '2rem' }}>
-          <SummaryStat label="💰 إجمالي العجل (بدون دبح)" value={calculations.meat} color="var(--primary-color)" />
+        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+          <SummaryStat label="💰 إجمالي العجل" value={calculations.meat} color="var(--primary-color)" />
           <SummaryStat label="🔪 إجمالي الدبح" value={calculations.slaughter} />
           <SummaryStat label="🧾 الإجمالي الكلي" value={calculations.total} color="var(--success)" />
         </div>

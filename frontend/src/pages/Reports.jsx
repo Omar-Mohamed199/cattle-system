@@ -100,14 +100,14 @@ const Reports = () => {
         <h2 className="page-title">التقارير المالية</h2>
       </div>
 
-      <div style={{display: 'flex', borderBottom: '1px solid var(--border-color)', marginBottom: '1rem'}}>
-        <div style={tabStyle('cows')} onClick={() => setActiveTab('cows')}>تقرير المبيعات والعجول</div>
+      <div style={{display: 'flex', borderBottom: '1px solid var(--border-color)', marginBottom: '1rem', overflowX: 'auto', whiteSpace: 'nowrap'}}>
+        <div style={tabStyle('cows')} onClick={() => setActiveTab('cows')}>تقرير المبيعات</div>
         <div style={tabStyle('slaughter')} onClick={() => setActiveTab('slaughter')}>تقرير الذبح</div>
-        <div style={tabStyle('expenses')} onClick={() => setActiveTab('expenses')}>تقرير المصروفات العامة</div>
+        <div style={tabStyle('expenses')} onClick={() => setActiveTab('expenses')}>تقرير المصروفات</div>
       </div>
 
       {activeTab === 'cows' && (
-        <div className="card" style={{padding: 0, overflow: 'hidden', marginTop: '1.5rem'}}>
+        <div className="card" style={{padding: 0, overflowX: 'auto', marginTop: '1.5rem'}}>
           <table>
             <thead>
               <tr>
@@ -132,7 +132,7 @@ const Reports = () => {
       )}
 
       {activeTab === 'slaughter' && (
-        <div className="card" style={{padding: 0, overflow: 'hidden', marginTop: '1.5rem'}}>
+        <div className="card" style={{padding: 0, overflowX: 'auto', marginTop: '1.5rem'}}>
           <table>
             <thead>
               <tr>
@@ -159,7 +159,7 @@ const Reports = () => {
           <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem'}}>
             <h3>إجمالي المصروفات: <span style={{color: 'var(--danger)'}}>{expensesTotal.toLocaleString('ar-EG')} ج.م</span></h3>
           </div>
-          <div style={{padding: 0, overflow: 'hidden', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)'}}>
+          <div style={{padding: 0, overflowX: 'auto', border: '1px solid var(--border-color)', borderRadius: 'var(--radius-md)'}}>
             <table style={{ margin: 0 }}>
               <thead>
                 <tr>

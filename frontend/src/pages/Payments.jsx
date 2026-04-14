@@ -89,7 +89,7 @@ const Payments = () => {
         <div className="card" style={{marginBottom: '2rem'}}>
           <h3 style={{marginBottom: '1rem'}}>تسجيل دفعة جديدة</h3>
           <form onSubmit={handleSubmit}>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
               <div className="input-group">
                 <label>المبلغ (ج.م)</label>
                 <input type="number" className="input-control" value={form.amount} onChange={e => setForm({...form, amount: e.target.value})} required />
@@ -129,7 +129,7 @@ const Payments = () => {
         </div>
       )}
 
-      <div className="card" style={{padding: 0, overflow: 'hidden'}}>
+      <div className="card" style={{padding: 0, overflowX: 'auto'}}>
         <table>
           <thead>
             <tr>

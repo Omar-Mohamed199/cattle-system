@@ -1,11 +1,20 @@
-import React from 'react';
-import { NavLink, Outlet, useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { NavLink, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Home, Users, BookOpen, CreditCard, Receipt, LogOut, TrendingUp } from 'lucide-react';
+import { Home, BookOpen, CreditCard, Receipt, LogOut, TrendingUp, Menu, X } from 'lucide-react';
 
 const Layout = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
+  // Close sidebar on route change (for mobile)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [location]);
 
   const handleLogout = () => {
     logout();
@@ -15,7 +24,6 @@ const Layout = () => {
   const navItems = [
     { name: 'لوحة القيادة', path: '/', icon: <Home size={20} /> },
     { name: 'العجول', path: '/cows', icon: <BookOpen size={20} /> },
-
     { name: 'المدفوعات', path: '/payments', icon: <CreditCard size={20} /> },
     { name: 'المصروفات', path: '/expenses', icon: <Receipt size={20} /> },
     { name: 'التقارير', path: '/reports', icon: <TrendingUp size={20} /> },
@@ -23,8 +31,22 @@ const Layout = () => {
 
   return (
     <div className="layout-container">
-      <aside className="sidebar">
-        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+      {/* Mobile Header */}
+      <header className="mobile-header">
+        <h1 style={{ color: 'var(--primary-color)', fontSize: '1.25rem', fontWeight: 'bold', margin: 0 }}>إدارة العجول</h1>
+        <button className="mobile-menu-btn" onClick={toggleSidebar}>
+          {sidebarOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </header>
+
+      {/* Sidebar Overlay */}
+      <div 
+        className={`sidebar-overlay ${sidebarOpen ? 'visible' : ''}`} 
+        onClick={() => setSidebarOpen(false)}
+      ></div>
+
+      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }} className="sidebar-header">
           <h1 style={{ color: 'var(--primary-color)', fontSize: '1.5rem', fontWeight: 'bold' }}>إدارة العجول</h1>
           <p style={{ color: 'var(--text-muted)', fontSize: '0.875rem' }}>مرحباً {user?.username}</p>
         </div>
