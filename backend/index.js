@@ -4,6 +4,9 @@ const http = require('http');
 const mongoose = require('mongoose');
 const { Server } = require('socket.io');
 const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 const server = http.createServer(app);
@@ -15,6 +18,9 @@ const io = new Server(server, {
   },
 });
 
+// Middleware
+app.use(helmet());
+app.use(morgan('dev')); // Request logging
 app.use(cors({
   origin: "*",
   methods: ["GET", "POST", "PUT", "DELETE"],
@@ -22,6 +28,7 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Health check
 app.get("/", (req, res) => {
   res.send("API is running...");
 });
@@ -32,9 +39,16 @@ app.use((req, res, next) => {
   next();
 });
 
-// Create routes connection
-const apiRoutes = require('./routes/api');
-app.use('/api', apiRoutes);
+// Routes
+app.use('/api/auth', require('./routes/authRoutes'));
+app.use('/api/customers', require('./routes/customerRoutes'));
+app.use('/api/cows', require('./routes/cowRoutes'));
+app.use('/api/payments', require('./routes/paymentRoutes'));
+app.use('/api/expenses', require('./routes/expenseRoutes'));
+app.use('/api/dashboard', require('./routes/dashboardRoutes'));
+
+// Error Handler
+app.use(errorHandler);
 
 // Database connection
 mongoose.connect(process.env.MONGO_URI)
