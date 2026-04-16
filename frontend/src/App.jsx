@@ -7,6 +7,7 @@ import Login from './components/Login';
 // Placeholder Pages
 import Dashboard from './pages/Dashboard';
 import Cows from './pages/Cows';
+import Sheep from './pages/Sheep';
 import Payments from './pages/Payments';
 import Expenses from './pages/Expenses';
 import Reports from './pages/Reports';
@@ -30,6 +31,7 @@ const App = () => {
       }>
         <Route index element={<Dashboard />} />
         <Route path="cows" element={<Cows />} />
+        <Route path="sheep" element={<Sheep />} />
 
         <Route path="payments" element={<Payments />} />
         <Route path="expenses" element={<Expenses />} />

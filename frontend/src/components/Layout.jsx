@@ -24,6 +24,7 @@ const Layout = () => {
   const navItems = [
     { name: 'لوحة القيادة', path: '/', icon: <Home size={20} /> },
     { name: 'العجول', path: '/cows', icon: <BookOpen size={20} /> },
+    { name: 'الخرفان', path: '/sheep', icon: <BookOpen size={20} /> },
     { name: 'المدفوعات', path: '/payments', icon: <CreditCard size={20} /> },
     { name: 'المصروفات', path: '/expenses', icon: <Receipt size={20} /> },
     { name: 'التقارير', path: '/reports', icon: <TrendingUp size={20} /> },
