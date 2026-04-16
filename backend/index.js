@@ -43,6 +43,7 @@ app.use((req, res, next) => {
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/customers', require('./routes/customerRoutes'));
 app.use('/api/cows', require('./routes/cowRoutes'));
+app.use('/api/sheep', require('./routes/sheepRoutes'));
 app.use('/api/payments', require('./routes/paymentRoutes'));
 app.use('/api/expenses', require('./routes/expenseRoutes'));
 app.use('/api/dashboard', require('./routes/dashboardRoutes'));

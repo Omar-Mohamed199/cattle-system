@@ -17,7 +17,12 @@ const paymentSchema = new mongoose.Schema({
   cowId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Cow',
-    required: true,
+    required: false,
+  },
+  sheepId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Sheep',
+    required: false,
   },
   paymentMethod: {
     type: String,
