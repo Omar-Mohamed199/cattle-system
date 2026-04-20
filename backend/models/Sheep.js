@@ -34,6 +34,11 @@ const sheepSchema = new mongoose.Schema({
     type: Number,
     default: 0,
   },
+  sheepType: {
+    type: String,
+    enum: ['بلدي', 'برقي'],
+    default: 'بلدي'
+  },
   partners: [partnerSchema],
 }, { timestamps: true });
 

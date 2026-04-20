@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import api from '../api';
 import { useSocket } from '../context/SocketContext';
-import { Plus, Trash2, Download } from 'lucide-react';
+import { Plus, Trash2, Download, Search } from 'lucide-react';
 import LoadingSpinner from '../components/LoadingSpinner';
 import ErrorMessage from '../components/ErrorMessage';
 import { exportToExcel } from '../utils/exportToExcel';
@@ -15,6 +15,7 @@ const Payments = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [form, setForm] = useState({ amount: '', customerId: '', cowId: '', paymentMethod: 'cash', date: new Date().toISOString().split('T')[0] });
+  const [searchQuery, setSearchQuery] = useState('');
   const socket = useSocket();
 
   const fetchData = async (showLoading = true) => {
@@ -73,13 +74,28 @@ const Payments = () => {
     }
   };
 
+  const filteredPayments = (payments || []).filter(p => {
+    const query = searchQuery.toLowerCase();
+    const customerName = p.customerId?.name?.toLowerCase() || '';
+    const customerPhone = p.customerId?.phone || '';
+    const cowNumber = p.cowId?.numberId?.toString() || '';
+    const sheepNumber = p.sheepId?.numberId?.toString() || '';
+    
+    return customerName.includes(query) || 
+           customerPhone.includes(query) || 
+           cowNumber.includes(query) || 
+           sheepNumber.includes(query);
+  });
+
   const handleExport = () => {
-    const data = payments.map(p => ({
+    const data = filteredPayments.map(p => ({
       "التاريخ": new Date(p.date).toLocaleDateString('ar-EG'),
       "العميل": p.customerId?.name || "غير معروف",
+      "رقم التليفون": p.customerId?.phone || "-",
       "المبلغ": p.amount,
       "طريقة الدفع": p.paymentMethod === 'transfer' ? 'تحويل بنكي' : 'كاش',
-      "رقم العجل": p.cowId ? `#${p.cowId.numberId}` : '-'
+      "رقم العجل": p.cowId ? `#${p.cowId.numberId}` : '-',
+      "رقم الخروف": p.sheepId ? `#${p.sheepId.numberId}` : '-'
     }));
     exportToExcel(data, "المدفوعات");
   };
@@ -90,7 +106,18 @@ const Payments = () => {
     <div>
       <div className="page-header">
         <h2 className="page-title">إدارة المدفوعات (الأقساط)</h2>
-        <div style={{ display: 'flex', gap: '1rem' }}>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+          <div className="input-group" style={{ marginBottom: 0, position: 'relative' }}>
+            <Search size={16} style={{ position: 'absolute', right: '10px', top: '10px', color: 'var(--text-muted)' }} />
+            <input 
+              type="text" 
+              className="input-control" 
+              placeholder="بحث بالاسم، الهاتف، أو رقم الحيوان..." 
+              style={{ paddingRight: '35px', width: '300px' }}
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
+          </div>
           <button className="btn btn-outline" style={{ color: 'var(--success)', borderColor: 'var(--success)' }} onClick={handleExport}>
             <Download size={18} /> تحميل Excel
           </button>
@@ -154,21 +181,30 @@ const Payments = () => {
               <th>العميل</th>
               <th>المبلغ</th>
               <th>طريقة الدفع</th>
-              <th>مرتبط بعجل</th>
+              <th>مرتبط بـ (عجل/خروف)</th>
               <th>الإجراءات</th>
             </tr>
           </thead>
           <tbody>
-            {(payments || []).length === 0 && (
-              <tr><td colSpan="6" style={{textAlign:'center', padding:'2rem', color:'var(--text-muted)'}}>لا توجد مدفوعات مسجلة</td></tr>
+            {filteredPayments.length === 0 && (
+              <tr><td colSpan="6" style={{textAlign:'center', padding:'2rem', color:'var(--text-muted)'}}>لا توجد مدفوعات مطابقة للبحث</td></tr>
             )}
-            {(payments || []).map(payment => (
+            {filteredPayments.map(payment => (
               <tr key={payment._id}>
                 <td>{new Date(payment.date).toLocaleDateString('ar-EG')}</td>
-                <td>{payment.customerId ? payment.customerId.name : 'غير معروف'}</td>
+                <td>
+                  <div style={{display: 'flex', flexDirection: 'column'}}>
+                    <span>{payment.customerId ? payment.customerId.name : 'غير معروف'}</span>
+                    {payment.customerId?.phone && <small style={{color: 'var(--text-muted)', fontSize: '0.75rem'}}>{payment.customerId.phone}</small>}
+                  </div>
+                </td>
                 <td style={{color: 'var(--success)', fontWeight: 'bold'}}>{payment.amount.toLocaleString('ar-EG')} ج.م</td>
                 <td>{payment.paymentMethod === 'transfer' ? 'تحويل بنكي' : 'كاش'}</td>
-                <td>{payment.cowId ? <span className="badge badge-warning">#{payment.cowId.numberId}</span> : '-'}</td>
+                <td>
+                  {payment.cowId && <span className="badge badge-warning" title="عجل">#{payment.cowId.numberId} (عجل)</span>}
+                  {payment.sheepId && <span className="badge badge-primary" style={{backgroundColor: 'var(--primary-color)'}} title="خروف">#{payment.sheepId.numberId} (خروف)</span>}
+                  {!payment.cowId && !payment.sheepId && '-'}
+                </td>
                 <td>
                   <button className="btn btn-danger" style={{padding: '0.25rem 0.5rem'}} onClick={() => deletePayment(payment._id)}>
                     <Trash2 size={16} />

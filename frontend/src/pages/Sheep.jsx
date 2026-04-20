@@ -60,6 +60,7 @@ const Sheep = () => {
         dbId: item._id,
         numberId: (item.numberId || '').toString(),
         weight: (item.weight || 0).toString(),
+        sheepType: item.sheepType || 'بلدي',
         partners: (item.partners || []).map(p => ({
           id: Math.random().toString(36).substr(2, 9),
           customerId: p.customerId ? (p.customerId._id || p.customerId) : '',
@@ -97,6 +98,7 @@ const Sheep = () => {
     dbId: s.dbId,
     numberId: Number(s.numberId),
     weight: Number(s.weight) || 0,
+    sheepType: s.sheepType,
     partners: s.partners
       .filter(p => p.customerId.trim() !== '')
       .map(p => ({
@@ -183,7 +185,7 @@ const Sheep = () => {
 
   const markDirty = () => { isDirty.current = true; };
   const createEmptyPartner = () => ({ id: Math.random().toString(36).substr(2, 9), customerId: '', share: '', price: '', slaughterCostShare: '' });
-  const createEmptySheep = () => ({ id: Math.random().toString(36).substr(2, 9), numberId: '', weight: '', dbId: null, partners: [] });
+  const createEmptySheep = () => ({ id: Math.random().toString(36).substr(2, 9), numberId: '', weight: '', sheepType: 'بلدي', dbId: null, partners: [] });
   const handleAddSheep = () => { markDirty(); setSheep([...sheep, createEmptySheep()]); };
   const handleRemoveSheep = (sheepIdKey) => { if(window.confirm('هل أنت متأكد من حذف الخروف؟')) { markDirty(); setSheep(sheep.filter(s => s.id !== sheepIdKey)); } };
   const handleChangeSheep = (sheepIdKey, field, value) => { markDirty(); setSheep(sheep.map(s => s.id === sheepIdKey ? { ...s, [field]: value } : s)); };
@@ -226,6 +228,7 @@ const Sheep = () => {
           const customer = customers.find(cust => cust._id === p.customerId);
           return {
             "رقم الخروف": item.numberId,
+            "نوع الخروف": item.sheepType,
             "اسم العميل": customer ? customer.name : "غير معروف",
             "وزن الخروف": item.weight,
             "سعر الكجم": p.price,
@@ -350,6 +353,13 @@ const SheepCard = React.memo(({ sheep, customers, payments, handleChangeSheep, h
             <input type="number" className="input-control" style={{ width: '120px', fontWeight: 'bold' }} placeholder="#" value={sheep.numberId} onChange={(e) => handleChangeSheep(sheep.id, 'numberId', e.target.value)} />
           </div>
           <div className="input-group" style={{ marginBottom: 0 }}>
+            <label style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>النوع:</label>
+            <select className="input-control" style={{ width: '100px' }} value={sheep.sheepType} onChange={(e) => handleChangeSheep(sheep.id, 'sheepType', e.target.value)}>
+              <option value="بلدي">بلدي</option>
+              <option value="برقي">برقي</option>
+            </select>
+          </div>
+          <div className="input-group" style={{ marginBottom: 0 }}>
             <label style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>الوزن الإجمالي (كجم):</label>
             <input type="number" className="input-control" style={{ width: '150px' }} placeholder="الوزن الصافي" value={sheep.weight} onChange={(e) => handleChangeSheep(sheep.id, 'weight', e.target.value)} />
           </div>
@@ -364,6 +374,7 @@ const SheepCard = React.memo(({ sheep, customers, payments, handleChangeSheep, h
           <thead>
             <tr>
               <th style={{ width: '180px' }}>العميل</th>
+              <th style={{ width: '80px' }}>النوع</th>
               <th style={{ width: '80px' }}>النسبة (%)</th>
               <th style={{ width: '90px' }}>السعر/كجم</th>
               <th style={{ width: '100px' }}>تكلفة الذبح</th>
@@ -388,6 +399,7 @@ const SheepCard = React.memo(({ sheep, customers, payments, handleChangeSheep, h
                     <option value="NEW" style={{fontWeight: 'bold', color: 'var(--primary-color)'}}>+ إضافة عميل جديد</option>
                   </select>
                 </td>
+                <td style={{ fontSize: '0.9rem', textAlign: 'center' }}>{sheep.sheepType}</td>
                 <td><input type="number" className="input-control" style={{marginBottom: 0, padding: '0.4rem'}} value={partner.share} onChange={(e) => handleChangePartner(sheep.id, partner.id, 'share', e.target.value)} /></td>
                 <td><input type="number" className="input-control" style={{marginBottom: 0, padding: '0.4rem'}} value={partner.price} onChange={(e) => handleChangePartner(sheep.id, partner.id, 'price', e.target.value)} /></td>
                 <td><input type="number" className="input-control" style={{marginBottom: 0, padding: '0.4rem'}} value={partner.slaughterCostShare} onChange={(e) => handleChangePartner(sheep.id, partner.id, 'slaughterCostShare', e.target.value)} /></td>

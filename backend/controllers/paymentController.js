@@ -8,6 +8,7 @@ const getPayments = asyncHandler(async (req, res) => {
   const payments = await Payment.find()
     .populate('customerId')
     .populate('cowId')
+    .populate('sheepId')
     .sort({ date: -1, createdAt: -1 });
   res.json(payments);
 });
